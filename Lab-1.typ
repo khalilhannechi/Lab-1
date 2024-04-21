@@ -60,26 +60,32 @@ end
 #exo[Prime Number][Write a function that determines if a given number $n$ is prime#footnote[A prime number is a number greater than $1$ that has no positive divisors other than $1$ and itself.]. The function should return true if the number is prime and false otherwise.]
 
 ```julia
-function is_prime(n::Int)
-  if n <= 1
-    return false 
-  elif n <= 3
-    return true  # 2 and 3 are prime
-  elif n % 2 == 0 || n % 3 == 0
-    return false  
-  end
-
-  # Efficiently check divisibility by numbers of the form 6k ± 1 (after 3)
-  i = 5
-  while i^2 <= n
-    if n % i == 0 || n % (i + 2) == 0
-      return false
+function is_prime(n)
+    if n <= 1  # Numbers less than or equal to 1 are not prime
+        return false
     end
-    i += 6
-  end
+    if n <= 3  # 2 and 3 are prime
+        return true
+    end
 
-  return true
+    if n % 2 == 0 || n % 3 == 0  # Any number divisible by 2 or 3 (besides 2 and 3) is not prime
+        return false
+    end
+
+    i = 5
+    while i * i <= n  # Check divisibility up to the square root of n
+        if n % i == 0 || n % (i + 2) == 0
+            return false
+        end
+        i += 6  # Optimization: Only check numbers of the form 6k ± 1
+    end
+    return true
 end
+
+# Test the function
+println(is_prime(5))  # Output: true
+println(is_prime(8))  # Output: false
+
 
 ```
 
@@ -128,43 +134,7 @@ function matrix_add(A::Matrix, B::Matrix)
   end
   return C
 end
-
-# Function for matrix multiplication 
-function matrix_mul
-  rows_A, cols_A = size(A)
-  rows_B, cols_B = size(B)
-  if cols_A != rows_B
-    error("Incompatible dimensions for matrix multiplication")
-  end
-
-  C = zeros(rows_A, cols_B)
-  for i in 1:rows_A
-    for j in 1:cols_B
-      for k in 1:cols_A
-        C[i, j] += A[i, k] * B[k, j]
-      end
-    end
-  end
-  return C
-end
-
-# Function for determinant calculation using Gaussian elimination (recursive)
-function determinant(A::Matrix)
-  n = size(A)[1]  # Get the number of rows/columns (assuming square matrix)
-  if n == 1
-    return A[1, 1]  # Determinant of a 1x1 matrix is the single element
-  end
-
-  det = 0
-  for i in 1:n
-    # Calculate minor determinant (cofactor matrix multiplied by its diagonal element)
-    minor_det = determinant(minor(A, i, 1))
-    det += A[i, 1] * ((-1)^(i-1)) * minor_det  # Apply sign based on row position
-  end
-  return det
-end
 ```
-
 #test[Test your functions with the following matrices
 ```julia
 A = [1 2; 3 4]
@@ -182,8 +152,6 @@ function count_words(text::String)
   # Initialize an empty dictionary to store word counts
   word_counts = Dict{String, Int}()
 
-  # Read the file line by line
-  for line in eachline(text)
     # Split the line into word 
     words = split(lowercase(replace(line, r"^\W+", "")), r"\W+").filter(x -> x != "")
 
@@ -192,9 +160,6 @@ function count_words(text::String)
       word_counts[word] = get(word_counts, word, 0) + 1
     end
   end
-
-  # Close the file
-  close(file)
 
   # Display word counts
   println("Word Counts:")
